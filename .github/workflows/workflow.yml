@@ -1,0 +1,47 @@
+name: Build with CMake and run testing suite
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y doxygen googletest cmake build-essential wget
+
+    - name: Install OpenCASCADE
+      run: |
+        # Download and extract OpenCASCADE
+        wget https://git.dev.opencascade.org/gitweb/?p=occt.git;a=snapshot;h=refs/heads/master;sf=tgz -O opencascade.tgz
+        mkdir opencascade && tar -xzf opencascade.tgz -C opencascade --strip-components=1
+        cd opencascade
+        mkdir build && cd build
+        cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+        make -j$(nproc)
+        sudo make install
+
+    - name: Configure CMake
+      working-directory: ${{github.workspace}}
+      run: |
+        cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      working-directory: ${{github.workspace}}
+      run: cmake --build ${{github.workspace}}/build --parallel
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ctest --output-on-failure
