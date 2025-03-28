@@ -24,6 +24,8 @@
 #include <TopoDS_Vertex.hxx>
 #include <gp_Pnt.hxx>
 #include <TopExp.hxx>
+#include <BRepAdaptor_Curve.hxx>
+#include <BRepAdaptor_Surface.hxx>
 
 typedef std::array<double, 3> vertex;
 typedef std::vector<std::array<size_t, 2>> Segments;
@@ -34,7 +36,7 @@ public:
     
     bool isValid() const { return m_isValid; }
 
-    std::pair<Segments, std::vector<vertex>> get1DMesh(double h = 0.01);
+    void get1DMesh(double h = 0.01);
     
     void writeVTK(const std::string& filename);
 
@@ -43,6 +45,11 @@ private:
     TopoDS_Shape m_shape;
     TopoDS_Face m_face;
     std::vector<TopoDS_Wire> m_wires;
+
+    Segments segments;
+    std::vector<vertex> vertices;
+    std::vector<vertex> D1;
+    std::vector<vertex> D2;
 };
 
 #endif // __QueryCAD_2D_HPP__

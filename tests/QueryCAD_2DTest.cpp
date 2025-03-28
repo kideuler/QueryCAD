@@ -8,7 +8,7 @@ TEST(QueryCAD2DTest, Constructor) {
 
 TEST(QueryCAD2DTest, Get1DMesh) {
     QueryCAD2 query("data/test.step");
-    auto [segments, vertices] = query.get1DMesh();
+    query.get1DMesh(0.1);
 }
 
 TEST(QueryCAD2DTest, WriteVTK) {
