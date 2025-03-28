@@ -17,31 +17,33 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Install dependencies
+    - name: Install Linuxbrew
       run: |
         sudo apt-get update
-        sudo apt-get install -y doxygen googletest cmake build-essential wget
+        sudo apt-get install -y build-essential curl file git
+        bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.bashrc
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 
-    - name: Install OpenCASCADE
+    - name: Install dependencies with Linuxbrew
       run: |
-        # Download and extract OpenCASCADE
-        wget https://git.dev.opencascade.org/gitweb/?p=occt.git;a=snapshot;h=refs/heads/master;sf=tgz -O opencascade.tgz
-        mkdir opencascade && tar -xzf opencascade.tgz -C opencascade --strip-components=1
-        cd opencascade
-        mkdir build && cd build
-        cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
-        make -j$(nproc)
-        sudo make install
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        brew install cmake doxygen googletest opencascade
 
     - name: Configure CMake
       working-directory: ${{github.workspace}}
       run: |
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
         cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
       working-directory: ${{github.workspace}}
-      run: cmake --build ${{github.workspace}}/build --parallel
+      run: |
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        cmake --build ${{github.workspace}}/build --parallel
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest --output-on-failure
+      run: |
+        eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+        ctest --output-on-failure
